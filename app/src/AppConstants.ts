@@ -1,6 +1,8 @@
+import 'dotenv/config';          // ES module style
+// or: require('dotenv').config();    // CommonJS
 
 export const AppConstants = {
-  APP_ID: "2636446de285ad6a",
-  REGION: "us",
-  AUTH_KEY: "f2f121c0a6c2cd9939668bd2de959ddc007767e4",
+  APP_ID: process.env.APP_ID,
+  REGION: process.env.REGION,
+  AUTH_KEY: process.env.AUTH_KEY,
 };
