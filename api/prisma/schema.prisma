@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  user_id    Int          @id @default(autoincrement())
+  first_name String       @db.VarChar(50)
+  last_name  String       @db.VarChar(50)
+  address    String       @db.VarChar(50)
+  email      String       @unique(map: "email") @db.VarChar(50)
+  pass       String       @db.VarChar(225)
+  dob        DateTime     @db.Date
+  creation   DateTime?    @default(now()) @db.Timestamp(0)
+  attendance attendance[]
+  favorite   favorite[]
+  message    message[]
+}
+
+model attendance {
+  attendance_id Int       @id @default(autoincrement())
+  meeting_id    Int?
+  user_id       Int?
+  user_join     DateTime? @default(now()) @db.Timestamp(0)
+  user_left     DateTime? @db.Timestamp(0)
+  meeting       meeting?  @relation(fields: [meeting_id], references: [meeting_id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_meeting_id_fk")
+  users         users?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "attendance_user_id_fk")
+
+  @@index([meeting_id], map: "meeting_id_idx")
+  @@index([user_id], map: "user_id_idx")
+}
+
+model favorite {
+  favorite_id Int      @id @default(autoincrement())
+  user_id     Int?
+  meeting_id  Int?
+  meeting     meeting? @relation(fields: [meeting_id], references: [meeting_id], onDelete: NoAction, onUpdate: NoAction, map: "favorite_meeting_id_fk")
+  users       users?   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "favorite_user_id_fk")
+
+  @@index([meeting_id], map: "meeting_id_idx")
+  @@index([user_id], map: "user_id_idx")
+}
+
+model meeting {
+  meeting_id             Int           @id @default(autoincrement())
+  user_id                Int
+  meeting_schedule_start DateTime      @db.Timestamp(0)
+  meeting_cap            Int?          @default(30)
+  attendance             attendance[]
+  favorite               favorite[]
+  meeting_info           meeting_info?
+  message                message[]
+}
+
+model meeting_info {
+  meeting_id             Int       @id
+  meeting_total_attendee Int?
+  meeting_end            DateTime? @default(now()) @db.Timestamp(0)
+  meeting                meeting   @relation(fields: [meeting_id], references: [meeting_id], onDelete: NoAction, onUpdate: NoAction, map: "meeting_info_meeting_id_fk")
+}
+
+model message {
+  message_id   Int       @id @default(autoincrement())
+  meeting_id   Int
+  user_id      Int
+  message      String    @db.VarChar(250)
+  message_time DateTime? @default(now()) @db.Timestamp(0)
+  meeting      meeting   @relation(fields: [meeting_id], references: [meeting_id], onDelete: NoAction, onUpdate: NoAction, map: "message_meeting_id_fk")
+  users        users     @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "message_user_id_fk")
+
+  @@index([meeting_id], map: "message_meeting_id_fk")
+  @@index([user_id], map: "message_user_id_fk")
+}
